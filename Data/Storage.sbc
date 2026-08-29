@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <EntityComponents>
+    <EntityComponent xsi:type="MyObjectBuilder_ModStorageComponentDefinition">
+      <Id>
+        <TypeId>ModStorageComponent</TypeId>
+        <SubtypeId>NewtonianThrusters</SubtypeId>
+      </Id>
+      <RegisteredStorageGuids>
+        <!-- Torque Balancer enabled flag -->
+        <guid>769b72d4-4655-476c-9d85-2fbc63820dcb</guid>
+        <!-- Force Weight slider -->
+        <guid>7ed65f8f-fa86-4ac2-aa59-83be8e9084f2</guid>
+        <!-- Learning Rate slider -->
+        <guid>bb3e4a3e-0c0a-47a0-ab94-cc6c84b92dad</guid>
+        <!-- Solver Iterations slider -->
+        <guid>80c89468-b4db-40c9-b5d1-9ceeb74f0127</guid>
+        <!-- Thrust Decay slider (L2 thrust-usage penalty) -->
+        <guid>32f81d62-de3e-4fa1-9917-a99e9a1f4c27</guid>
+      </RegisteredStorageGuids>
+    </EntityComponent>
+  </EntityComponents>
+</Definitions>
