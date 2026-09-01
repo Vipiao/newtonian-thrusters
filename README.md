@@ -43,9 +43,6 @@ descent:
   bounded. The result degrades in quality rather than in timing when the grid is large.
 - If the iterate diverges the solution is zeroed for that tick rather than applied.
 
-`ThrustSolver.Solve` is a pure function with no dependency on game state, which is what makes the
-above testable in isolation.
-
 ## Terminal controls
 
 Per grid controller:
