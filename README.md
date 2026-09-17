@@ -3,45 +3,25 @@
 A Space Engineers mod that makes thrusters apply torque about the centre of mass, and solves the
 thrust allocation problem that this creates.
 
-## Background
+## The problem
 
-In vanilla Space Engineers a thruster contributes force to the grid but no torque, regardless of
-where it is mounted. A ship with all its thrust on one side accelerates in a straight line. This is
-convenient, and it means thruster placement carries almost no design cost.
+For the Space Engineers mod, the problem is as follows. A space ship has thrusters. Users can place
+them such that they vary in numbers, direction, strength, etc. Each gives force and torque to the
+ship. From user input I get a target force and torque. This can be formulated as:
 
-This mod removes that simplification. Each thruster now produces
+    W*u=F
 
-    force  = u_i * MaxThrust_i * Direction_i
-    torque = u_i * MaxThrust_i * (Position_i x Direction_i)
-
-with the lever arm taken relative to the current centre of mass. Off-axis thrust now spins the
-grid, and a ship has to be either balanced or actively stabilised.
-
-Making that playable is the actual work. Once thrust and rotation are coupled, deciding how hard to
-run each thruster stops being independent per axis and becomes an allocation problem.
-
-## The solver
-
-Given a commanded force and torque, find per-thruster throttles `u` in `[0,1]` minimising
-
-    loss = f * |F - F_target|^2  +  (1 - f) * |T - T_target|^2  +  lambda * sum(u^2)
-
-where `F = sum(u_i * m_i * d_i)` and `T = sum(u_i * m_i * (r_i x d_i))` are both linear in `u`.
-
-The problem is a bound-constrained weighted least squares. It is solved with projected gradient
-descent:
-
-- `f` trades force tracking against torque tracking, exposed as a terminal slider.
-- `lambda` is an L2 penalty on throttle, which suppresses pairs of opposed thrusters both running
-  hard to cancel each other out.
-- Throttles are clamped to `[0,1]` after every step, which is the projection.
-- Steps are divided by a per-thruster curvature term. This is Jacobi preconditioning and it keeps
-  a single learning rate usable across grids whose thrusters differ in strength by orders of
-  magnitude.
-- The solution from the previous tick is used as the starting point.
-- Iteration count is fixed and configurable rather than run to convergence, so the cost per tick is
-  bounded. The result degrades in quality rather than in timing when the grid is large.
-- If the iterate diverges the solution is zeroed for that tick rather than applied.
+Where W is 6xn. 3 dimensions for force and torque stacked (3+3) and n such thrusters. "u" is a
+column vector with values 0 to 1 that is the thruster strength. F is 6x1 (force stacked on torque).
+You will solve this for u, but there can be many or no solutions, or maybe you must balance between
+solving force or torque. First I tried pseudo inverse to solve W, but it was difficult to balance
+the priorities. Instead I used gradient descent, L2 loss function where force and torque errors can
+be weighted. The user input force is also scaled down based on max theoretic input so the weight is
+the same size as the torque. To prevent solutions where thrusters fight and waste energy, I added a
+term to the loss that is u^2. The gradient per u is also divided by the thrusters max force^2 for
+balanced learning rate per thruster. I use warm start and fewer iterations to save CPU power.
+If the solution blows up or goes NaN, I set every thruster to zero for that tick instead of
+applying it.
 
 ## Terminal controls
 
